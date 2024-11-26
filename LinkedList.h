@@ -29,7 +29,7 @@ public:
     const Node* operator[](int index) const;
 
     //Overloaded stream insertion operator
-    friend std::ostream& operator<<(stod::ostream& out, const LinkedList& list);
+    friend std::ostream& operator<<(std::ostream& out, const LinkedList& list);
 
     //Overloaded += operator 
     LinkedList& operator+=(Node* newNode);
