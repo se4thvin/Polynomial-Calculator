@@ -3,11 +3,11 @@
 
 //defait constructor 
 
-Node::Node():coef(0,0), exp(0), net(nullptr){}
+Node::Node():coef(0.0), exp(0), next(nullptr){}
 
 //Overloaded Constructor 
 
-Node::Node (double cofficient, int exponent) : coef(coefficient), exp(exponent), next(nullptr){}
+Node::Node (double coefficient, int exponent) : coef(coefficient), exp(exponent), next(nullptr){}
 
 //Accessors (Getters)
 
@@ -26,7 +26,7 @@ Node* Node::getNext() const{
 //Mutators 
 
 void Node::setCoef(double coefficient){
-    coef = coefficent; 
+    coef = coefficient; 
 }
 
 void Node::setExp(int exponent){
@@ -34,7 +34,7 @@ void Node::setExp(int exponent){
 }
 
 void Node::setNext(Node* node) {
-    next = Node; 
+    next = node; 
 }
 
 // Overloaded stream insertion operator for Node pointer
@@ -56,26 +56,27 @@ std::ostream& operator<<(std::ostream& out, const Node* node){
         //Constant term (no x)
         if (absCoef == 1) {
             //Coefficient is 1 or -1
-            out << sign << "1"; 
-        } else [
+            out << sign << " 1"; 
+        } else {
             //Coefficient is not 1
             out << sign << " " << absCoef;
-        ]
+        }
     } else if (exp == 1) {
         // Exponent is 1
         if(absCoef == 1) {
             //Coef is 1 or -1
-            out << sign << "x";
+            out << sign << " x";
         } else {
             //Coef is not 1 
             out << sign << " " << absCoef << "x";
         }
     } else {
         //General Case
-        if (abtCoef == 1) {
-            //Coef
-            out << sign << "x" << exp;
+        if (absCoef == 1) {
+            //Coef is 1 or -1 
+            out << sign << " x^" << exp;
         } else {
+            //coef not 1 
             out << sign << " " << absCoef << "x^" << exp; 
         }
     }
