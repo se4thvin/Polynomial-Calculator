@@ -2,12 +2,12 @@
 
 
 //Default Constructor 
-LinkedList::LinkedList{}: head(nullptr), Size(0){}
+LinkedList::LinkedList() : head(nullptr), size(0){}
 
 //Destructor 
 LinkedList::~LinkedList(){
     Node* current = head;
-    while (currecnt !- nullprt){
+    while (current != nullptr){
         Node* temp = current; 
         current = current->getNext();
         delete temp; 
@@ -39,8 +39,8 @@ const Node* LinkedList::operator[](int index) const{
     int currentIndex = 0; 
 
     while(current != nullptr && currentIndex < index){
-        current = current->getNext{};
-        currentIndex++
+        current = current->getNext();
+        currentIndex++;
     }
 
     return current; 
