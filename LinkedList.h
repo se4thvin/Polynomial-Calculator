@@ -16,6 +16,9 @@ public:
     //Destructor 
     ~LinkedList(); 
 
+    //Recursive deletion of nodes
+    void recursiveDelete(Node* node);
+
     //Accessor for size
     int getSize() const; 
 
@@ -36,6 +39,9 @@ public:
 
     //sort for expo in dec 
     void sortList(); 
+
+    //Helper fucntion for insertion node in sorted order 
+    void insertNodeInSortedOrder(Node** sortedList, Node* node);
 
 };
 

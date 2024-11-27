@@ -4,16 +4,21 @@
 //Default Constructor 
 LinkedList::LinkedList() : head(nullptr), size(0){}
 
-//Destructor 
+//Destructor
 LinkedList::~LinkedList(){
-    Node* current = head;
-    while (current != nullptr){
-        Node* temp = current; 
-        current = current->getNext();
-        delete temp; 
-    }
+    recursiveDelete(head);
 }
 
+//Recursive delete fuction (delete linked list recursively)
+void LinkedList::recursiveDelete(Node* node){
+    if (node == nullptr){
+        return; 
+    } else {
+        recursiveDelete(node->getNext());
+        delete node; 
+
+    }
+}
 //Accessor for size 
 int LinkedList::getSize() const{
     return size; 
@@ -127,4 +132,18 @@ void LinkedList::sortList(){
             }
         }
     } while (swapped); 
+}
+
+void LinkedList::insertNodeInSortedOrder(Node** sortedList, Node* node){
+    if (*sortedList == nullptr || node->getExp() <= (*sortedList)->getExp()) {
+        node->setNext(*sortedList);
+        *sortedList = node;
+    } else {
+        Node* current = *sortedList;
+        while(current->getNext() != nullptr && current->getNext()->getExp() > node->getExp()) {
+            current = current->getNext();
+        }
+        node->setNext(current->getNext());
+        current->setNext(node);
+    }
 }
