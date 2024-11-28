@@ -104,34 +104,16 @@ void LinkedList::sortList(){
         return; 
     }
 
-    bool swapped; 
-    do {
-        swapped = false; 
-        Node* current = head; 
-        Node* prev = nullptr; 
+    Node* sortedList = nullptr;
+    Node* currentNode = head; 
 
-        while (current->getNext() != nullptr) {
-            if(current->getExp() < current->getNext()->getExp()){
-                //swap the nodes
-                Node* temp = current->getNext(); 
-                current->setNext(temp->getNext());
-                temp->setNext(current);
+    while(currentNode != nullptr){
+        Node* nextNode = currentNode->getNext();
+        insertNodeInSortedOrder(&sortedList, currentNode);
+        currentNode = nextNode;
+    }
 
-                if(prev == nullptr){
-                    head = temp;   
-                } else {
-                    prev->setNext(temp);
-                }
-
-                swapped = true; 
-                prev = temp; 
-            } else {
-                //move to next node
-                prev = current;
-                current = current->getNext(); 
-            }
-        }
-    } while (swapped); 
+    head = sortedList;
 }
 
 void LinkedList::insertNodeInSortedOrder(Node** sortedList, Node* node){
@@ -143,7 +125,8 @@ void LinkedList::insertNodeInSortedOrder(Node** sortedList, Node* node){
         while(current->getNext() != nullptr && current->getNext()->getExp() > node->getExp()) {
             current = current->getNext();
         }
-        node->setNext(current->getNext());
+        Node* temp = current->getNext();
         current->setNext(node);
+        node->setNext(temp);
     }
 }
