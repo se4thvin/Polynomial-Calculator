@@ -130,3 +130,5 @@ void LinkedList::insertNodeInSortedOrder(Node** sortedList, Node* node){
         node->setNext(temp);
     }
 }
+
+//clear linkedList 
