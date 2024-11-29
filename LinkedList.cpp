@@ -1,134 +1,169 @@
 #include "LinkedList.h"
+#include <cmath>
+#include <iomanip>
 
+// Default constructor
+LinkedList::LinkedList() : head(nullptr), size(0) {}
 
-//Default Constructor 
-LinkedList::LinkedList() : head(nullptr), size(0){}
-
-//Destructor
-LinkedList::~LinkedList(){
+// Destructor
+LinkedList::~LinkedList() {
     recursiveDelete(head);
 }
 
-//Recursive delete fuction (delete linked list recursively)
-void LinkedList::recursiveDelete(Node* node){
-    if (node == nullptr){
-        return; 
+// Recursive delete function
+void LinkedList::recursiveDelete(Node* node) {
+    if (node == nullptr) {
+        return;
     } else {
         recursiveDelete(node->getNext());
-        delete node; 
-
+        delete node;
     }
 }
-//Accessor for size 
-int LinkedList::getSize() const{
-    return size; 
+
+// Accessors (Getters)
+Node* LinkedList::getHead() const {
+    return head;
 }
 
-//Accesor for Head
-Node* LinkedList::getHead() const{
-    return head; 
+int LinkedList::getSize() const {
+    return size;
 }
 
-//Head setter (only for testing)
-void LinkedList::setHead(Node* newHead){
-    head = newHead; 
+// Mutators (Setters)
+void LinkedList::setHead(Node* node) {
+    head = node;
 }
 
-//Overloaded [] Operator
-const Node* LinkedList::operator[](int index) const{
-    if (index < 0  || index >= size ){
+void LinkedList::setSize(int s) {
+    size = s;
+}
+
+// Overloaded [] operator
+Node* LinkedList::operator[](int index) const {
+    if (index < 0 || index >= size) {
         return nullptr;
     }
-
-    const Node* current = head;
-    int currentIndex = 0; 
-
-    while(current != nullptr && currentIndex < index){
-        current = current->getNext();
-        currentIndex++;
+    Node* currentNode = head;
+    for (int i = 0; i < index; ++i) {
+        currentNode = currentNode->getNext();
     }
-
-    return current; 
+    return currentNode;
 }
 
-//Overloaded stream insertion operator 
-std::ostream& operator<<(std::ostream& out, const LinkedList& list){
-    int listSize = list.getSize();
-    if(listSize == 0){
-        out <<"0";
-        return out;
-    }
+// Overloaded stream insertion operator
+std::ostream& operator<<(std::ostream& out, const LinkedList& list) {
+    Node* currentNode = list.head;
+    bool firstTerm = true;
 
-    for(int i=0; i < listSize; i++){
-        const Node* node = list[i];
+    // Set the output format for coefficients
+    out << std::fixed << std::setprecision(3);
 
-        if(node == nullptr){
+    while (currentNode != nullptr) {
+        double coef = currentNode->getCoef();
+        int exp = currentNode->getExp();
+        double absCoef = std::abs(coef);
+
+        // Skip terms with zero coefficients
+        if (coef == 0.0) {
+            currentNode = currentNode->getNext();
             continue;
-        }        
+        }
 
-        double coef = node->getCoef();
-
-        if(i == 0){ // Handle the sign for the first term 
-            if(coef < 0){  //neg coef 
-                out<<"-";
+        // Determine the sign
+        if (firstTerm) {
+            if (coef < 0) {
+                out << "-";
+            }
+            firstTerm = false;
+        } else {
+            if (coef < 0) {
+                out << " - ";
+            } else {
+                out << " + ";
             }
         }
 
-        out << node;
-
-        if(i < listSize - 1) {
-            out << " "; 
+        // Format and output the term
+        if (exp == 0) {
+            // Constant term
+            out << absCoef;
+        } else if (exp == 1) {
+            // Exponent is 1
+            if (absCoef == 1.0) {
+                out << "x";
+            } else {
+                out << absCoef << "x";
+            }
+        } else {
+            // Exponent is not 0 or 1 (could be positive or negative)
+            if (absCoef == 1.0) {
+                out << "x^" << exp;
+            } else {
+                out << absCoef << "x^" << exp;
+            }
         }
 
+        currentNode = currentNode->getNext();
     }
 
-    return out; 
+    // If the list was empty or all coefficients were zero
+    if (firstTerm) {
+        out << "0";
+    }
+
+    return out;
 }
 
-LinkedList& LinkedList::operator+=(Node* newNode){
-    if(newNode == nullptr){
-        return *this;
+// Overloaded += operator
+LinkedList& LinkedList::operator+=(Node* newNode) {
+    if (head == nullptr) {
+        head = newNode;
+    } else {
+        // Traverse to the end of the list and append newNode
+        Node* currentNode = head;
+        while (currentNode->getNext() != nullptr) {
+            currentNode = currentNode->getNext();
+        }
+        currentNode->setNext(newNode);
     }
-
-    newNode->setNext(head);
-    head = newNode;
-    size++; 
-
-    return *this; 
-
+    size++;
+    return *this;
 }
 
-//Sort for exponents in dec order 
-void LinkedList::sortList(){
-    if(head == nullptr || head->getNext() == nullptr){
-        return; 
+// Sort function
+void LinkedList::sortList() {
+    if (head == nullptr || head->getNext() == nullptr) {
+        return;
     }
-
     Node* sortedList = nullptr;
-    Node* currentNode = head; 
-
-    while(currentNode != nullptr){
+    Node* currentNode = head;
+    while (currentNode != nullptr) {
         Node* nextNode = currentNode->getNext();
+        currentNode->setNext(nullptr);  // Disconnect the node
         insertNodeInSortedOrder(&sortedList, currentNode);
         currentNode = nextNode;
     }
-
     head = sortedList;
 }
 
-void LinkedList::insertNodeInSortedOrder(Node** sortedList, Node* node){
-    if (*sortedList == nullptr || node->getExp() <= (*sortedList)->getExp()) {
+// Helper function for sorting
+void LinkedList::insertNodeInSortedOrder(Node** sortedList, Node* node) {
+    if (*sortedList == nullptr || node->getExp() >= (*sortedList)->getExp()) {
         node->setNext(*sortedList);
         *sortedList = node;
     } else {
         Node* current = *sortedList;
-        while(current->getNext() != nullptr && current->getNext()->getExp() > node->getExp()) {
+        while (current->getNext() != nullptr && current->getNext()->getExp() > node->getExp()) {
             current = current->getNext();
         }
-        Node* temp = current->getNext();
+        node->setNext(current->getNext());
         current->setNext(node);
-        node->setNext(temp);
     }
 }
 
-//clear linkedList 
+// Clear function
+void LinkedList::clear() {
+    recursiveDelete(head);
+    head = nullptr;
+    size = 0;
+}

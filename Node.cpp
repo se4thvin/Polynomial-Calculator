@@ -1,86 +1,66 @@
 #include "Node.h"
-#include <iomanip>
+#include <cmath>
 
-//defait constructor 
+// Default constructor
+Node::Node() : coef(0.0), exp(0), next(nullptr) {}
 
-Node::Node():coef(0.0), exp(0), next(nullptr){}
+// Overloaded constructor
+Node::Node(double coefficient, int exponent) : coef(coefficient), exp(exponent), next(nullptr) {}
 
-//Overloaded Constructor 
-
-Node::Node (double coefficient, int exponent) : coef(coefficient), exp(exponent), next(nullptr){}
-
-//Accessors (Getters)
-
-double Node::getCoef() const{
-    return coef; 
+// Accessors (Getters)
+double Node::getCoef() const {
+    return coef;
 }
 
-int Node::getExp() const{
-    return exp; 
+int Node::getExp() const {
+    return exp;
 }
 
-Node* Node::getNext() const{ 
-    return next; 
+Node* Node::getNext() const {
+    return next;
 }
 
-//Mutators 
-
-void Node::setCoef(double coefficient){
-    coef = coefficient; 
+// Mutators (Setters)
+void Node::setCoef(double coefficient) {
+    coef = coefficient;
 }
 
-void Node::setExp(int exponent){
-    exp = exponent; 
+void Node::setExp(int exponent) {
+    exp = exponent;
 }
 
 void Node::setNext(Node* node) {
-    next = node; 
+    next = node;
 }
 
-// Overloaded stream insertion operator for Node pointer
-std::ostream& operator<<(std::ostream& out, const Node* node){
-    if (node == nullptr) {
-        return out; 
-    }
+// Overloaded stream insertion operator
+std::ostream& operator<<(std::ostream& out, const Node& node) {
+    double coef = node.getCoef();
+    int exp = node.getExp();
 
-    double coef = node->getCoef(); 
-    int exp = node->getExp(); 
-
-    //Determine the sign 
-    char sign = (coef < 0 ) ? '-':'+';
-
-    //Absolute value of the coefficient 
-    double absCoef = std::abs(coef); 
-
-    if (exp == 0){
-        //Constant term (no x)
-        if (absCoef == 1) {
-            //Coefficient is 1 or -1
-            out << sign << " 1"; 
-        } else {
-            //Coefficient is not 1
-            out << sign << " " << absCoef;
-        }
+    // Format and output the term according to specifications
+    if (exp == 0) {
+        // Constant term
+        out << coef;
     } else if (exp == 1) {
         // Exponent is 1
-        if(absCoef == 1) {
-            //Coef is 1 or -1
-            out << sign << " x";
+        if (coef == 1.0) {
+            out << "x";
+        } else if (coef == -1.0) {
+            out << "-x";
         } else {
-            //Coef is not 1 
-            out << sign << " " << absCoef << "x";
+            out << coef << "x";
         }
     } else {
-        //General Case
-        if (absCoef == 1) {
-            //Coef is 1 or -1 
-            out << sign << " x^" << exp;
+        // Exponent is greater than 1
+        if (coef == 1.0) {
+            out << "x^" << exp;
+        } else if (coef == -1.0) {
+            out << "-x^" << exp;
         } else {
-            //coef not 1 
-            out << sign << " " << absCoef << "x^" << exp; 
+            out << coef << "x^" << exp;
         }
     }
 
-    return out; 
+    return out;
 }
-

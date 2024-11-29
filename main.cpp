@@ -7,271 +7,226 @@
 #include <vector>
 #include <map>
 #include <cmath>
-using namespace std; 
+#include <iomanip>
 
+using namespace std;
 
-LinkedList parseLine(string line, double& value);
-void combineLikeTerms(LinkedList& list);
-double evaluateExpression(const LinkedList& list, double xValue);
-string formatExpression(const LinkedList& linkedList);
+// Function prototypes
+LinkedList parseLine(const std::string& line, double& xValue);
+void combineLikeTerms(LinkedList& linkedList);
+double evaluateExpression(const LinkedList& linkedList, double xValue);
+std::string formatExpression(const LinkedList& linkedList);
+std::string normalizeOperators(const std::string& line);
 
-int main(){
+int main() {
+    // 1. Prompt User for Filename
+    cout << "Enter the filename containing the expressions: ";
+    std::string filename;
+    getline(cin, filename);
 
-    //prompt user for file name
-    cout << "Enter the file name: ";
-    string fileName;
-    cin >> fileName;
-
-    //open file 
-    ifstream file(fileName);
-    
-    //check if file is open 
-    if(!file.is_open()){
-        cout << "Error opening file" << endl; 
+    // 2. Open File
+    ifstream file(filename.c_str());
+    if (!file.is_open()) {
+        cout << "Error opening file" << endl;
         return 1;
     }
 
-    //read file line by line
-    string line; 
-    while(getline(file, line)){
-        if(line.empty()){
-            continue;
+    // 3. Read and Process Each Line in the File
+    std::string line;
+    while (getline(file, line)) {
+        if (line.empty()) {
+            continue;  // Skip empty lines
         }
 
-        line = normalizeOperators(line);
 
-        double xValue = 0.0; 
+        double xValue = 0.0;
+        // Call parseLine(line, xValue) to get linkedList
+        LinkedList linkedList = parseLine(line, xValue);
 
-        LinkedList polyList = parseLine(line, xValue);
-
-        if(polyList.getSize() == 0){
-            continue;
+        if (linkedList.getSize() == 0) {
+            continue;  // Skip invalid expressions
         }
 
-        //combine like terms
-        combineLikeTerms(polyList);
+        // Call combineLikeTerms(linkedList)
+        combineLikeTerms(linkedList);
 
-        //Sort the list
-        polyList.sortList();
+        // Call linkedList.sortList()
+        linkedList.sortList();
 
-        //evaluate the expression
-        double result = evaluateExpression(polyList, xValue);
+        // Call evaluateExpression(linkedList, xValue) to get result
+        double result = evaluateExpression(linkedList, xValue);
 
-        //format the expression
-        string formattedExpression = formatExpression(polyList);
+        // Output the expression and result
+        // Use the overloaded << operator to display linkedList
+        std::string expression = formatExpression(linkedList);
 
-        //display the expression
-        cout << formattedExpression << " = "
-             << fixed << setprecision(3) << result << endl;
+        // Format result to three decimal places
+        cout << expression << " = " << fixed << setprecision(3) << result << endl;
     }
 
-    file.close(); 
+    // 4. Close File
+    file.close();
 
     return 0;
-
 }
 
-//function parseLine
-LinkedList parseLine(string line, double& value){
-
-    LinkedList linkedList; 
-
-    if(line.empty()){
-        return LinkedList();
+// Function: parseLine
+LinkedList parseLine(const std::string& line, double& xValue) {
+    LinkedList linkedList;
+    if (line.empty()) {
+        return linkedList;
     }
 
-    LinkedList list;
-
-    int pos = line.find('=');
-
-    if(pos == string::npos){
+    // 1. Split Line into LHS and RHS
+    size_t pos = line.find('=');
+    if (pos == std::string::npos) {
         cout << "Invalid expression" << endl;
-        return list; 
+        return linkedList;
     }
-    //split line into lhs and rhs 
-    //lhs is the function, rhs is the expression
-    string lhs = line.substr(0,pos); 
-    string rhs = line.substr(pos+1);
-    
-    //handle the left side of the equation
-    int posParan = lhs.find('(');
-    int posParan2 = lhs.find(')');
+    std::string lhs = line.substr(0, pos);
+    std::string rhs = line.substr(pos + 1);
 
-    if(posParan == string::npos || posParan2 == string::npos || posParan2 <= posParan){
+    // 2. Extract xValue from LHS
+    size_t posParan1 = lhs.find('(');
+    size_t posParan2 = lhs.find(')');
+    if (posParan1 == std::string::npos || posParan2 == std::string::npos || posParan2 <= posParan1) {
         cout << "Invalid expression" << endl;
-        return list; 
+        return linkedList;
     }
-    //finding the X value 
-    string xValueString = lhs.substr(posParan+1, posParan2 - posParan - 1);
-    double xValue = stod(xValueString); //convert X string to double 
+    std::string xValueString = lhs.substr(posParan1 + 1, posParan2 - posParan1 - 1);
+    try {
+        xValue = std::stod(xValueString);
+    } catch (const std::exception& e) {
+        cout << "Invalid x value: " << xValueString << endl;
+        return linkedList;
+    }
 
-    //Handle right side of the equation
-    //Tokenize rhs into terms and operators 
-    // Tokenize RHS into Terms and Operators
-	// Split rhs by spaces into a list of tokens
-    //terms being numbers and x 
-    //operators being +, - 
-
-    vector <string> tokens;
-    istringstream iss(rhs);
-    string token; 
-    while(iss>>token){
+    // 4. Tokenize RHS into Terms and Operators
+    std::vector<std::string> tokens;
+    std::istringstream iss(rhs);
+    std::string token;
+    while (iss >> token) {
         tokens.push_back(token);
     }
-
-    string sign = "+";
     size_t index = 0;
-    LinkedList linkedList;
 
-    while(index < tokens.size()){
+    // 5. Initialize Variables
+    std::string sign = "+";
 
-        string currentToken = tokens[index];
-
-        if(tokens[index] == "+" || tokens[index] == "-"){
-            sign = currentToken;
+    // 6. Process Each Token
+    while (index < tokens.size()) {
+        if (tokens[index] == "+" || tokens[index] == "-") {
+            sign = tokens[index];
             index++;
             if (index >= tokens.size()) {
-                std::cout << "Invalid expression: operator at the end" << std::endl;
+                cout << "Invalid expression: operator at the end" << endl;
                 return linkedList;
             }
-            currentToken = tokens[index];
-        } else if (index == 0){
-            sign = "+"; //Assume is + at the start
+        } else if (index == 0) {
+            sign = "+";
         }
-
-        double coef = 1.0;
-        int exp = 0; 
-        size_t xPos = currentToken.find('x');
-
-    if(xPos != string::npos){
-
-        string coefPart = currentToken.substr(0, xPos);
-        string expPart = currentToken.substr(xPos+1);
-
-        if (coefPart.empty()){
-            //coef stays 1.0 
+        if (index >= tokens.size()) {
+            cout << "Invalid expression" << endl;
+            return linkedList;
         }
-        else {
-            try {
-                    coef = std::stod(coefPart);
+        std::string term = tokens[index];
+        index++;
+
+        // Process Term:
+        double coefficient = 1.0;
+        int exponent = 0;
+        size_t xPos = term.find('x');
+        if (xPos != std::string::npos) {
+            std::string coef_part = term.substr(0, xPos);
+            std::string exp_part = term.substr(xPos + 1);
+
+            if (coef_part.empty()) {
+                coefficient = 1.0;
+            } else {
+                try {
+                    coefficient = std::stod(coef_part);
                 } catch (const std::exception& e) {
-                    std::cout << "Invalid coefficient: " << coefPart << std::endl;
+                    cout << "Invalid coefficient: " << coef_part << endl;
                     return linkedList;
                 }
-        }
+            }
 
-        //process exponent
-        if (expPart.empty()) {
-            exp = 1;
-        } else if(expPart[0] == '^'){
-            string expString = expPart.substr(1); // After ^
-            try {
-                exp = std::stoi(expString);
-            } catch (const std::exception& e) {
-                std::cout << "Invalid exponent: " << expString << std::endl;
+            if (exp_part.empty()) {
+                exponent = 1;
+            } else if (exp_part[0] == '^') {
+                std::string exp_string = exp_part.substr(1);
+                try {
+                    exponent = std::stoi(exp_string);
+                } catch (const std::exception& e) {
+                    cout << "Invalid exponent: " << exp_string << endl;
+                    return linkedList;
+                }
+            } else {
+                cout << "Invalid exponent format in term: " << term << endl;
                 return linkedList;
             }
         } else {
-            cout << "Invalid exponent format in term: " << currentToken << endl;
-            return linkedList;
-        } 
-        } else {
-            // Term is a constant (no 'x')
             try {
-                coef = std::stod(currentToken);
+                coefficient = std::stod(term);
             } catch (const std::exception& e) {
-                std::cout << "Invalid term: " << currentToken << std::endl;
+                cout << "Invalid term: " << term << endl;
                 return linkedList;
             }
-            exp = 0;
+            exponent = 0;
         }
 
-        if (sign == "-"){
-            coef = -coef;
+        if (sign == "-") {
+            coefficient = -coefficient;
         }
 
-        Node* newNode = new Node(coef, exp);
+        Node* newNode = new Node(coefficient, exponent);
         linkedList += newNode;
-        index++;
     }
 
     return linkedList;
-
 }
 
-//function combine like terms 
-void combineLikeTerms(LinkedList& list){
-    std::map<int, double> expTocoefMap;
-    
+// Function: combineLikeTerms
+void combineLikeTerms(LinkedList& linkedList) {
+    // 1. Initialize a Map to Store Terms
+    std::map<int, double> expToCoefMap;
 
-    //Travese the linkedList 
-    Node* currentNode = list.getHead(); 
-    while(currentNode != nullptr) {
-        int expo = currentNode->getExp();
-        double coef = currentNode->getCoef(); 
-
-        if(expTocoefMap.find(expo) != expTocoefMap.end()){
-            expTocoefMap[expo] += coef;
-        } else {
-            expTocoefMap[expo] = coef; 
-        }
-
-        currentNode = currentNode->getNext(); 
-    }
-
-    //rebuild the linkedList
-    //clear the current list
-    list.~LinkedList();
-    for(const auto& pair: expTocoefMap){
-        int exp = pair.first;
-        double coef = pair.second; 
-
-        //if coef is 0, skip
-        if(coef == 0){
-            continue; 
-        }
-        //if coef is not 0, add to the list
-        if(coef != 0.0){
-            Node* newNode = new Node(coef, exp);
-            list += newNode;
-        }
-    }
-
-    list.sortList(); 
-
-}
-
-//function to evaluate the polynomial
-double evaluateExpression(const LinkedList& list, double xValue){
-    double result = 0.0; 
-
-    Node* currentNode = list.getHead();
-    while(currentNode != nullptr){
+    // 2. Traverse the LinkedList
+    Node* currentNode = linkedList.getHead();
+    while (currentNode != nullptr) {
+        int exp = currentNode->getExp();
         double coef = currentNode->getCoef();
-        int exp = currentNode->getExp(); 
-        double termValue = coef * pow(xValue, exp);
-
-        result += termValue; 
+        expToCoefMap[exp] += coef;
         currentNode = currentNode->getNext();
     }
 
+    // 3. Rebuild the LinkedList
+    linkedList.clear();
+    for (std::map<int, double>::reverse_iterator it = expToCoefMap.rbegin(); it != expToCoefMap.rend(); ++it) {
+        int exp = it->first;
+        double coef = it->second;
+        if (coef != 0.0) {
+            Node* newNode = new Node(coef, exp);
+            linkedList += newNode;
+        }
+    }
+}
+
+// Function: evaluateExpression
+double evaluateExpression(const LinkedList& linkedList, double xValue) {
+    double result = 0.0;
+    Node* currentNode = linkedList.getHead();
+    while (currentNode != nullptr) {
+        double termValue = currentNode->getCoef() * std::pow(xValue, currentNode->getExp());
+        result += termValue;
+        currentNode = currentNode->getNext();
+    }
     return result;
 }
 
-//function to format the expression
-string formatExpression(const LinkedList& linkedList) {
+// Function: formatExpression
+std::string formatExpression(const LinkedList& linkedList) {
     std::ostringstream oss;
-    oss << linkedList;  // Use the overloaded << operator for LinkedList
+    oss << linkedList;
     return oss.str();
-}
-
-//Normalize the expression
-string normalizeOperators(const string& line) {
-    string normalizedLine = line;
-    for (char& c : normalizedLine) {
-        if (c == '–' || c == '—') {
-            c = '-';
-        }
-    }
-    return normalizedLine;
 }

@@ -1,42 +1,34 @@
 #ifndef NODE_H
 #define NODE_H
 
-
 #include <iostream>
 
-
-class Node; 
-
-std::ostream& operator<<(std::ostream& out, const Node* node); 
-
+// Node class definition
 class Node {
-private: 
-    double coef; //Coef
-    int exp;     //Exp
-    Node* next;  //Ptr to next node 
+private:
+    double coef;   // Coefficient
+    int exp;       // Exponent
+    Node* next;    // Pointer to the next node
 
 public:
+    // Default constructor
+    Node();
 
-    //Default Constructor
-    Node(); 
-
-    //Overloaded Constructor 
+    // Overloaded constructor
     Node(double coefficient, int exponent);
 
-    //Accessors 
-    double getCoef() const; 
-    int getExp() const; 
-    Node* getNext() const; 
+    // Accessors (Getters)
+    double getCoef() const;
+    int getExp() const;
+    Node* getNext() const;
 
-    //Mutators 
-    void setCoef(double coefficient); 
-    void setExp(int exponent); 
-    void setNext(Node* node); 
+    // Mutators (Setters)
+    void setCoef(double coefficient);
+    void setExp(int exponent);
+    void setNext(Node* node);
 
-    //Friend declaration for overloaded 
-    friend std::ostream& operator<<(std::ostream& out,  const Node* node);
-
-
+    // Overloaded stream insertion operator
+    friend std::ostream& operator<<(std::ostream& out, const Node& node);
 };
 
-#endif
+#endif // NODE_H
