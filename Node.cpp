@@ -1,5 +1,6 @@
 #include "Node.h"
 #include <cmath>
+#include <iomanip>
 
 // Default constructor
 Node::Node() : coef(0.0), exp(0), next(nullptr) {}
@@ -37,28 +38,28 @@ void Node::setNext(Node* node) {
 std::ostream& operator<<(std::ostream& out, const Node& node) {
     double coef = node.getCoef();
     int exp = node.getExp();
+    double absCoef = std::abs(coef);
 
-    // Format and output the term according to specifications
+    // Set the output format for coefficients
+    out << std::fixed << std::setprecision(3);
+
+    // Format and output the term
     if (exp == 0) {
         // Constant term
-        out << coef;
+        out << absCoef;
     } else if (exp == 1) {
         // Exponent is 1
-        if (coef == 1.0) {
+        if (absCoef == 1.0) {
             out << "x";
-        } else if (coef == -1.0) {
-            out << "-x";
         } else {
-            out << coef << "x";
+            out << absCoef << "x";
         }
     } else {
-        // Exponent is greater than 1
-        if (coef == 1.0) {
+        // Exponent is not 0 or 1 (could be positive or negative)
+        if (absCoef == 1.0) {
             out << "x^" << exp;
-        } else if (coef == -1.0) {
-            out << "-x^" << exp;
         } else {
-            out << coef << "x^" << exp;
+            out << absCoef << "x^" << exp;
         }
     }
 

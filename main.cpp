@@ -16,7 +16,7 @@ LinkedList parseLine(const std::string& line, double& xValue);
 void combineLikeTerms(LinkedList& linkedList);
 double evaluateExpression(const LinkedList& linkedList, double xValue);
 std::string formatExpression(const LinkedList& linkedList);
-std::string normalizeOperators(const std::string& line);
+
 
 int main() {
     // 1. Prompt User for Filename
